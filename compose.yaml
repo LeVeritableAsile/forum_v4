@@ -1,0 +1,66 @@
+version: '3'
+ 
+services:
+  nginx:
+    image: nginx:alpine
+    restart: always
+    ports:
+      - '8000:80'
+      - '8443:443'
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
+    volumes_from:
+      - certbot:ro
+      - forum:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/etc:/etc/letsencrypt
+      - /var/lib/letsencrypt
+    command:
+      - certonly
+      - --quiet
+      - --webroot
+      - --webroot-path
+      - /var/www/dev.lesitedecuisine.fr
+      - -d dev.lesitedecuisine.fr
+    volumes_from:
+      - forum
+#   command:
+#     - renew
+#     - --quiet
+
+  forum:
+    build: forum
+    restart: always
+    image: forum 
+    volumes:
+      - /var/www/dev.lesitedecuisine.fr
+      - ./forum_extensions:/forum_extensions
+    depends_on:
+      - mariadb
+    environment:
+      MEMPROF_PROFILE: dump_on_limit
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - ./mariadb:/var/lib/mysql
+    environment:
+      MARIADB_AUTO_UPGRADE: 1
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      MARIADB_DATABASE: forum_v4
+      MARIADB_USER: forum_v4
+      MARIADB_PASSWORD_FILE: /run/secrets/db_forum_v4_password
+    secrets:
+      - db_root_password
+      - db_forum_v4_password
+
+secrets:
+  db_root_password:
+    file: ./secrets/db_root_password.txt
+  db_forum_v4_password:
+    file: ./secrets/db_forum_v4_password.txt
