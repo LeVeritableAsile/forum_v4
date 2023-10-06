@@ -33,7 +33,8 @@ services:
     image: mariadb:latest
     restart: always
     volumes:
-      - ./mariadb:/var/lib/mysql
+      - ./mariadb/data:/var/lib/mysql
+      - ./mariadb/conf.d:/etc/mysql/conf.d:ro
     environment:
       MARIADB_AUTO_UPGRADE: 1
       MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password

@@ -1,0 +1,2 @@
+[mariadb]
+innodb_ft_cache_size = 160000000
