@@ -20,14 +20,23 @@ RUN chmod +x /usr/local/bin/install-php-extensions && \
     openssl \
     pdo_mysql \
     tokenizer \
-    zip \
-    memprof
+    zip
 
+# Create the working directory
+VOLUME /var/www/dev.lesitedecuisine.fr
 WORKDIR /var/www/dev.lesitedecuisine.fr
+RUN chown www-data:www-data .
+USER www-data
 
 # Install the forum
 RUN composer create-project flarum/flarum . && \
   composer require migratetoflarum/old-passwords && \
   composer require flarum/mentions && \
-  composer require flarum/tags
+  composer require flarum/tags && \
+  composer require fof/nightmode && \
+  composer config repositories.asile_ninja vcs https://github.com/LeVeritableAsile/ext_ninja.git && \
+  composer require asile/ninja
 
+# With its configuration
+ADD config.php .
+ADD favicon.ico .

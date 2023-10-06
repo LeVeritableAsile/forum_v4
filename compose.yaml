@@ -5,44 +5,29 @@ services:
     image: nginx:alpine
     restart: always
     ports:
-      - '8000:80'
-      - '8443:443'
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/dhparam.pem:/etc/ssl/certs/dhparam.pem:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
     volumes_from:
-      - certbot:ro
       - forum:ro
 
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-      - ./certbot/etc:/etc/letsencrypt
-      - /var/lib/letsencrypt
-    command:
-      - certonly
-      - --quiet
-      - --webroot
-      - --webroot-path
-      - /var/www/dev.lesitedecuisine.fr
-      - -d dev.lesitedecuisine.fr
-    volumes_from:
-      - forum
-#   command:
-#     - renew
-#     - --quiet
-
   forum:
-    build: forum
+    build: forum/build
     restart: always
     image: forum 
     volumes:
-      - /var/www/dev.lesitedecuisine.fr
-      - ./forum_extensions:/forum_extensions
+      - ./forum/avatars:/var/www/dev.lesitedecuisine.fr/public/assets/avatars
+      - ./forum/logs:/var/www/dev.lesitedecuisine.fr/storage/logs
+    environment:
+      DB_DATABASE: forum_v4
+      DB_USER: forum_v4
+      DB_PASSWORD_FILE: /run/secrets/db_forum_v4_password
     depends_on:
       - mariadb
-    environment:
-      MEMPROF_PROFILE: dump_on_limit
+    secrets:
+      - db_forum_v4_password
 
   mariadb:
     image: mariadb:latest

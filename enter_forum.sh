@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec sudo docker exec -it forum_v4_forum_1 sh
+exec sudo docker compose exec -it forum sh

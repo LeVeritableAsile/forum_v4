@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec openssl dhparam -out dhparam.pem 4096
+exec openssl dhparam -out ssl/dhparam.pem 4096
